@@ -16,6 +16,11 @@ Both of these functions have some required keyword-only arguments:
 * `wiki_name` will be used in `<title>` tags as the name of the wiki.
 * `wiki_root` should be an instance of `pathlib.Path` representing the directory where wiki articles will be saved. Each namespace will be in its own subdirectory.
 
+As well as some optional ones:
+
+* `mentions_to_tags` is a function that takes a Markdown string and returns the same string except with user mentions replaced with a more user-friendly syntax. By default this converts Discord mentions like `<@86841168427495424>` to Discord tags like `@Fenhl#4813`.
+* `tags_to_mentions` is the inverse of `mentions_to_tags`.
+
 ## The wiki object
 
 The view function node representing the wiki index has a few extra attributes defined on it. It can be accessed as the return value of the `flask_wiki.child` or `flask_wiki.index` call, or as `g.wiki`.

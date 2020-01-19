@@ -14,11 +14,11 @@ import flask_view_tree # https://github.com/fenhl/flask-view-tree
 DISCORD_MENTION_REGEX = '<@!?([0-9]+)>'
 DISCORD_TAG_REGEX = '@([^#]{2,32})#([0-9]{4}?)'
 
-def child(node, name='wiki', display_string=None, *, md, user_class, wiki_root, **options):
-    return setup(md, user_class, wiki_root, node.child(name, display_string, **options))
+def child(node, name='wiki', display_string=None, *, md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_name, wiki_root, **options):
+    return setup(md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, node.child(name, display_string, **options))
 
-def index(app, *, md, user_class, wiki_root, **options):
-    return setup(md, user_class, wiki_root, flask_view_tree.index(app, **options))
+def index(app, *, md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_root, **options):
+    return setup(md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, flask_view_tree.index(app, **options))
 
 def render_template(template_name, **kwargs):
     if template_name is None:
@@ -27,7 +27,7 @@ def render_template(template_name, **kwargs):
         template_path = f'{template_name.replace(".", "/")}.html.j2'
     return jinja2.Markup(flask.render_template(template_path, **kwargs))
 
-def setup(md, user_class, wiki_name, wiki_root, decorator):
+def setup(md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, decorator):
     class DiscordMentionPattern(markdown.inlinepatterns.LinkInlineProcessor):
         def handleMatch(self, m, data):
             user = user_class(m.group(1))
@@ -102,19 +102,21 @@ def setup(md, user_class, wiki_name, wiki_root, decorator):
     def current_time():
         flask.g.wiki = wiki_index
 
-    def mentions_to_tags(text):
-        while True:
-            match = re.search(DISCORD_MENTION_REGEX, text)
-            if not match:
-                return text
-            text = f'{text[:match.start()]}@{user_class(match.group(1))}{text[match.end():]}'
+    if mentions_to_tags is None:
+        def mentions_to_tags(text):
+            while True:
+                match = re.search(DISCORD_MENTION_REGEX, text)
+                if not match:
+                    return text
+                text = f'{text[:match.start()]}@{user_class(match.group(1))}{text[match.end():]}'
 
-    def tags_to_mentions(text):
-        while True:
-            match = re.search(DISCORD_TAG_REGEX, text)
-            if not match:
-                return text
-            text = f'{text[:match.start()]}<@{user_class.by_tag(match.group(1), int(match.group(2))).snowflake}>{text[match.end():]}'
+    if tags_to_mentions is None:
+        def tags_to_mentions(text):
+            while True:
+                match = re.search(DISCORD_TAG_REGEX, text)
+                if not match:
+                    return text
+                text = f'{text[:match.start()]}<@{user_class.by_tag(match.group(1), int(match.group(2))).snowflake}>{text[match.end():]}'
 
     def exists(namespace, title):
         article_path = wiki_root / namespace / f'{title}.md'
