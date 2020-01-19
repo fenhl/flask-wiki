@@ -8,6 +8,7 @@ import jinja2 # PyPI: Jinja2
 import markdown # PyPI: Markdown
 import markdown.inlinepatterns # PyPI: Markdown
 import markdown.util # PyPI: Markdown
+import wtforms # PyPI: WTForms
 
 import flask_view_tree # https://github.com/fenhl/flask-view-tree
 
