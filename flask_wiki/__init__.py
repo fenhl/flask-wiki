@@ -15,11 +15,11 @@ import flask_view_tree # https://github.com/fenhl/flask-view-tree
 DISCORD_MENTION_REGEX = '<@!?([0-9]+)>'
 DISCORD_TAG_REGEX = '@([^#]{2,32})#([0-9]{4}?)'
 
-def child(view, name='wiki', display_string=None, *, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_name, wiki_root, **options):
-    return setup(view.view_func_node.app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, view.child(name, display_string, **options))
+def child(view, name='wiki', display_string=None, *, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, user_class_constructor=None, wiki_name, wiki_root, **options):
+    return setup(view.view_func_node.app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, view.child(name, display_string, **options))
 
-def index(app, *, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_root, **options):
-    return setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, flask_view_tree.index(app, **options))
+def index(app, *, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, user_class_constructor=None, wiki_root, **options):
+    return setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, flask_view_tree.index(app, **options))
 
 def render_template(template_name, **kwargs):
     if template_name is None:
@@ -28,10 +28,13 @@ def render_template(template_name, **kwargs):
         template_path = f'{template_name.replace(".", "/")}.html.j2'
     return jinja2.Markup(flask.render_template(template_path, **kwargs))
 
-def setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, decorator):
+def setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, decorator):
+    if user_class_constructor is None:
+        user_class_constructor = user_class
+
     class DiscordMentionPattern(markdown.inlinepatterns.LinkInlineProcessor):
         def handleMatch(self, m, data):
-            user = user_class(m.group(1))
+            user = user_class_constructor(m.group(1))
             el = markdown.util.etree.Element('a')
             el.text = f'@{user.name}'
             el.set('href', user.profile_url)
@@ -115,7 +118,7 @@ def setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_cla
                 match = re.search(DISCORD_MENTION_REGEX, text)
                 if not match:
                     return text
-                text = f'{text[:match.start()]}@{user_class(match.group(1))}{text[match.end():]}'
+                text = f'{text[:match.start()]}@{user_class_constructor(match.group(1))}{text[match.end():]}'
 
     if tags_to_mentions is None:
         def tags_to_mentions(text):
