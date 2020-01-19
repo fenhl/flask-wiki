@@ -2,7 +2,7 @@ This package can be used to host a wiki on a [flask-view-tree](https://github.co
 
 # Usage
 
-First, symlink `wiki` inside your template folder to the `templates` directory in this repository, or write your own versions of these templates.
+First, symlink `wiki` inside your template folder to the `templates` directory in this repository, or write your own versions of these templates. If you choose the first option, make sure you have a template called `base.html.j2` that the wiki templates can extend.
 
 There are two ways to integrate flask-wiki into your website:
 
