@@ -11,8 +11,8 @@ import markdown.util # PyPI: Markdown
 
 import flask_view_tree # https://github.com/fenhl/flask-view-tree
 
-DISCORD_MENTION_REGEX = r'<@!?([0-9]+)>'
-DISCORD_TAG_REGEX = r'@([^#]{2,32})#([0-9]{4}?)'
+DISCORD_MENTION_REGEX = '<@!?([0-9]+)>'
+DISCORD_TAG_REGEX = '@([^#]{2,32})#([0-9]{4}?)'
 
 def child(node, name='wiki', display_string=None, *, md, user_class, wiki_root, **options):
     return setup(md, user_class, wiki_root, node.child(name, display_string, **options))
@@ -22,9 +22,9 @@ def index(app, *, md, user_class, wiki_root, **options):
 
 def render_template(template_name, **kwargs):
     if template_name is None:
-        template_path = '{}.html.j2'.format(flask.request.endpoint.replace('.', '/'))
+        template_path = f'{flask.request.endpoint.replace(".", "/")}.html.j2'
     else:
-        template_path = '{}.html.j2'.format(template_name.replace('.', '/'))
+        template_path = f'{template_name.replace(".", "/")}.html.j2'
     return jinja2.Markup(flask.render_template(template_path, **kwargs))
 
 def setup(md, user_class, wiki_name, wiki_root, decorator):
@@ -32,7 +32,7 @@ def setup(md, user_class, wiki_name, wiki_root, decorator):
         def handleMatch(self, m, data):
             user = user_class(m.group(1))
             el = markdown.util.etree.Element('a')
-            el.text = '@{}'.format(user.name)
+            el.text = f'@{user.name}'
             el.set('href', user.profile_url)
             return el, m.start(0), m.end(0)
 
@@ -107,14 +107,14 @@ def setup(md, user_class, wiki_name, wiki_root, decorator):
             match = re.search(DISCORD_MENTION_REGEX, text)
             if not match:
                 return text
-            text = '{}@{}{}'.format(text[:match.start()], user_class(match.group(1)), text[match.end():])
+            text = f'{text[:match.start()]}@{user_class(match.group(1))}{text[match.end():]}'
 
     def tags_to_mentions(text):
         while True:
             match = re.search(DISCORD_TAG_REGEX, text)
             if not match:
                 return text
-            text = '{}<@{}>{}'.format(text[:match.start()], user_class.by_tag(match.group(1), int(match.group(2))).snowflake, text[match.end():])
+            text = f'{text[:match.start()]}<@{user_class.by_tag(match.group(1), int(match.group(2))).snowflake}>{text[match.end():]}'
 
     def exists(namespace, title):
         article_path = wiki_root / namespace / f'{title}.md'
