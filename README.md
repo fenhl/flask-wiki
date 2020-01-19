@@ -1,2 +1,27 @@
-# flask-wiki
-A wiki based on flask-view-tree and Flask-Login
+This package can be used to host a wiki on a [flask-view-tree](https://github.com/fenhl/flask-view-tree)-based website.
+
+# Usage
+
+First, symlink `wiki` inside your template folder to the `templates` directory in this repository, or write your own versions of these templates.
+
+There are two ways to integrate flask-wiki into your website:
+
+* If you want your website's index page (`/`) to be the wiki main page, just call `flask_wiki.index(app)` instead of writing an index node decorated with `flask_view_tree.index(app)`.
+* If you want the wiki main page to be a subpage of a `node`, register it by calling `flask_wiki.child(node)` instead of writing a child node decorated with `node.child()`. The node name is optional and defaults to `'wiki'`.
+
+Both of these functions have some required keyword-only arguments:
+
+* `md` should be an instance of `flaskext.markdown.Markdown`. An extension that can parse Discord mentions will be registered on it.
+* `user_class` should be a subclass of `flask_login.UserMixin` with the class method `by_tag` which takes a Discord username and discriminator and returns an instance, and the instance attributes (or properties) `name` (for the Discord nickname) and `profile_url` (for the page to which a Discord mention should link).
+* `wiki_name` will be used in `<title>` tags as the name of the wiki.
+* `wiki_root` should be an instance of `pathlib.Path` representing the directory where wiki articles will be saved. Each namespace will be in its own subdirectory.
+
+## The wiki object
+
+The view function node representing the wiki index has a few extra attributes defined on it. It can be accessed as the return value of the `flask_wiki.child` or `flask_wiki.index` call, or as `g.wiki`.
+
+* `wiki.exists(namespace, title)` returns whether that article exists.
+* `wiki.namespaces()` returns an iterator over pairs of namespaces and all articles in that namespace.
+* `wiki.redirect_namespaces` is a dictionary mapping namespaces to functions that take an article name and return the URL to which the namespaced article node should redirect. By default, all articles in the `wiki` namespace are redirected to their respective unnamespaced article node.
+* `wiki.save(namespace, title, text)` save that text as that article's new Markdown source.
+* `wiki.source(namespace, title)` returns that article's Markdown source. Raises FileNotFoundError if the article doesn't exist.

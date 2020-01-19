@@ -1,0 +1,12 @@
+{% extends "base.html.j2" %}
+
+{% block title %}article not found — {{wiki_name}}{% endblock %}
+
+{% block page_content %}
+    <h1>Article not found</h1>
+    <p>There is no article called “{{title}}” in the wiki namespace “{{namespace}}”.</p>
+    <p>
+        Create this article (coming soon™) {#TODO#}
+        • <a href="{{g.wiki.url}}">{{wiki_name}} main page</a>
+    </p>
+{% endblock %}

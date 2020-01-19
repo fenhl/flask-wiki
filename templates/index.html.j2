@@ -1,0 +1,16 @@
+{% extends "base.html.j2" %}
+
+{% block title %}{{wiki_name}}{% endblock %}
+
+{% block page_content %}
+    <h1>{{wiki_name}}</h1>
+    {% for namespace, articles in g.wiki.namespaces() %}
+        <h2>{{namespace}}</h2>
+        <ul>
+            {% for article in articles %}
+                <li>{{article}}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    <p>Coming soon™</p>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html.j2" %}
+
+{% block title %}{% if namespace == 'wiki' %}{{title}} — {{wiki_name}}{% else %}{{namespace}}/{{title}} — {{wiki_name}}{% endif %}{% endblock %}
+
+{% block page_content %}
+    {{ g.wiki.source(namespace, title) | markdown }}
+{% endblock %}
