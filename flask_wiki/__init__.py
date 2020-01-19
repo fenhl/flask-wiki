@@ -78,7 +78,7 @@ def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wi
             if valuelist:
                 self.data = tags_to_mentions(valuelist[0])
 
-    def WikiEditForm(namespace, title, source):
+    def WikiEditForm(source):
         class Form(flask_wtf.FlaskForm):
             source = MarkdownField('Text', default=source)
             submit_wiki_edit_form = wtforms.SubmitField('Speichern')
