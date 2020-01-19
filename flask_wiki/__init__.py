@@ -58,7 +58,7 @@ def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wi
 
     @wiki_article.children()
     def wiki_article_namespaced(title, namespace):
-        if namespace in wiki_index.redirect_map:
+        if namespace in wiki_index.redirect_namespaces:
             return flask.redirect(wiki_index.redirect_namespaces[namespace](title))
         elif wiki_index.exists(namespace, title):
             return render_template('wiki.article', title=title, namespace=namespace, wiki_name=wiki_name)
