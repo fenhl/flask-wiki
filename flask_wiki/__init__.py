@@ -15,11 +15,11 @@ import flask_view_tree # https://github.com/fenhl/flask-view-tree
 DISCORD_MENTION_REGEX = '<@!?([0-9]+)>'
 DISCORD_TAG_REGEX = '@([^#]{2,32})#([0-9]{4}?)'
 
-def child(view, name='wiki', display_string=None, *, md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_name, wiki_root, **options):
-    return setup(view.view_func_node.app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, view.child(name, display_string, **options))
+def child(view, name='wiki', display_string=None, *, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_name, wiki_root, **options):
+    return setup(view.view_func_node.app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, view.child(name, display_string, **options))
 
-def index(app, *, md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_root, **options):
-    return setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, flask_view_tree.index(app, **options))
+def index(app, *, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, wiki_root, **options):
+    return setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, flask_view_tree.index(app, **options))
 
 def render_template(template_name, **kwargs):
     if template_name is None:
@@ -28,7 +28,7 @@ def render_template(template_name, **kwargs):
         template_path = f'{template_name.replace(".", "/")}.html.j2'
     return jinja2.Markup(flask.render_template(template_path, **kwargs))
 
-def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, decorator):
+def setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wiki_root, decorator):
     class DiscordMentionPattern(markdown.inlinepatterns.LinkInlineProcessor):
         def handleMatch(self, m, data):
             user = user_class(m.group(1))
@@ -86,7 +86,7 @@ def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wi
 
         return Form()
 
-    @wiki_article_namespaced.child('edit', methods=['GET', 'POST'])
+    @wiki_article_namespaced.child('edit', methods=['GET', 'POST'], decorators=edit_decorators)
     def wiki_article_edit(title, namespace):
         exists = wiki_index.exists(namespace, title)
         if exists:

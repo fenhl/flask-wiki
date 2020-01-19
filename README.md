@@ -18,6 +18,7 @@ Both of these functions have some required keyword-only arguments:
 
 As well as some optional ones:
 
+* `edit_decorators` is a list of decorators that will be added to the edit view (which is also used to create a new article). It defaults to an empty list.
 * `mentions_to_tags` is a function that takes a Markdown string and returns the same string except with user mentions replaced with a more user-friendly syntax. By default this converts Discord mentions like `<@86841168427495424>` to Discord tags like `@Fenhl#4813`.
 * `tags_to_mentions` is the inverse of `mentions_to_tags`.
 
