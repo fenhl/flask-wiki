@@ -146,6 +146,7 @@ def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wi
             return article_f.read()
 
     wiki_index.exists = exists
+    wiki_index.namespace_exists = namespace_exists
     wiki_index.namespaces = namespaces
     wiki_index.save = save
     wiki_index.source = source
