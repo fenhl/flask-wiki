@@ -13,7 +13,7 @@ import wtforms # PyPI: WTForms
 import flask_view_tree # https://github.com/fenhl/flask-view-tree
 
 DISCORD_MENTION_REGEX = '<@!?([0-9]+)>'
-DISCORD_TAG_REGEX = '@([^#]{2,32})#([0-9]{4}?)'
+DISCORD_TAG_REGEX = '@([^#]{2,32})#([0-9]{4})'
 
 def child(view, name='wiki', display_string=None, *, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, user_class_constructor=None, wiki_name, wiki_root, **options):
     return setup(view.view_func_node.app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, view.child(name, display_string, **options))
