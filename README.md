@@ -7,7 +7,7 @@ First, symlink `wiki` inside your template folder to the `templates` directory i
 There are two ways to integrate flask-wiki into your website:
 
 * If you want your website's index page (`/`) to be the wiki main page, just call `flask_wiki.index(app)` instead of writing an index node decorated with `flask_view_tree.index(app)`.
-* If you want the wiki main page to be a subpage of a `node`, register it by calling `flask_wiki.child(node)` instead of writing a child node decorated with `node.child()`. The node name is optional and defaults to `'wiki'`.
+* If you want the wiki main page to be a subpage of a `view`, register it by calling `flask_wiki.child(view)` instead of writing a child view decorated with `view.child()`. The node name is optional and defaults to `'wiki'`.
 
 Both of these functions have some required keyword-only arguments:
 
