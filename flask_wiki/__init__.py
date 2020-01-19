@@ -86,7 +86,7 @@ def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wi
 
         return Form()
 
-    @wiki_article_namespaced.child('edit')
+    @wiki_article_namespaced.child('edit', methods=['GET', 'POST'])
     def wiki_article_edit(title, namespace):
         exists = wiki_index.exists(namespace, title)
         if exists:
