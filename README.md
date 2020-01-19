@@ -26,6 +26,7 @@ As well as some optional ones:
 The view function node representing the wiki index has a few extra attributes defined on it. It can be accessed as the return value of the `flask_wiki.child` or `flask_wiki.index` call, or as `g.wiki`.
 
 * `wiki.exists(namespace, title)` returns whether that article exists.
+* `wiki.namespace_exists(namespace)` returns whether that namespace exists.
 * `wiki.namespaces()` returns an iterator over pairs of namespaces and all articles in that namespace.
 * `wiki.redirect_namespaces` is a dictionary mapping namespaces to functions that take an article name and return the URL to which the namespaced article node should redirect. By default, all articles in the `wiki` namespace are redirected to their respective unnamespaced article node.
 * `wiki.save(namespace, title, text)` save that text as that article's new Markdown source.

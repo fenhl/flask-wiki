@@ -87,12 +87,18 @@ def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wi
 
     @wiki_article_namespaced.child('edit')
     def wiki_article_edit(title, namespace):
-        source = wiki_index.source(namespace, title)
+        exists = wiki_index.exists(namespace, title)
+        if exists:
+            source = wiki_index.source(namespace, title)
+        elif wiki_index.namespace_exists(namespace):
+            source = ''
+        else:
+            return render_template('wiki.namespace-404', namespace=namespace, wiki_name=wiki_name), 404
         wiki_edit_form = WikiEditForm(source)
         if wiki_edit_form.submit_wiki_edit_form.data and wiki_edit_form.validate():
             wiki_index.save(namespace, title, wiki_edit_form.source.data)
             return flask.redirect(flask.g.view_node.parent.url)
-        return render_template('wiki.edit', title=title, namespace=namespace, wiki_name=wiki_name, wiki_edit_form=wiki_edit_form)
+        return render_template('wiki.edit', exists=exists, title=title, namespace=namespace, wiki_name=wiki_name, wiki_edit_form=wiki_edit_form)
 
     @wiki_article_namespaced.child('history')
     def wiki_article_history(title, namespace):
@@ -121,6 +127,9 @@ def setup(app, md, mentions_to_tags, tags_to_mentions, user_class, wiki_name, wi
     def exists(namespace, title):
         article_path = wiki_root / namespace / f'{title}.md'
         return article_path.exists()
+
+    def namespace_exists(namespace):
+        return (wiki_root / namespace).exists()
 
     def namespaces():
         for namespace_dir in sorted(wiki_root.iterdir()):

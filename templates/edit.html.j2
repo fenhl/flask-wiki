@@ -4,7 +4,7 @@
 
 {% block page_content %}
     <h1>
-        Edit wiki article “{% if namespace == 'wiki' %}{{title}}{% else %}{{namespace}}/{{title}}{% endif %}”
+        {% if exists %}Edit{% else %}Create{% endif %} wiki article “{% if namespace == 'wiki' %}{{title}}{% else %}{{namespace}}/{{title}}{% endif %}”
         <a href="{{g.view_node.parent.url}}" class="btn btn-danger">Cancel</a>
     </h1>
     {{gen_form(wiki_edit_form, g.view_node.url)}}
