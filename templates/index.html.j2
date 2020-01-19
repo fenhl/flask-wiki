@@ -9,8 +9,11 @@
         <ul>
             {% for article in articles %}
                 <li>{{article}}</li>
+            {% else %}
+                <li>(This namespace is empty.)</li>
             {% endfor %}
         </ul>
+    {% else %}
+        <p>There are no articles in this wiki.</p>
     {% endfor %}
-    <p>Coming soon™</p>
 {% endblock %}
