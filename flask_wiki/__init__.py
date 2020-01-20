@@ -149,10 +149,14 @@ def setup(app, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_cla
         with article_path.open() as article_f:
             return article_f.read()
 
+    wiki_index.MarkdownField = MarkdownField
+    wiki_index.WikiEditForm = WikiEditForm
     wiki_index.exists = exists
+    wiki_index.mentions_to_tags = mentions_to_tags
     wiki_index.namespace_exists = namespace_exists
     wiki_index.namespaces = namespaces
     wiki_index.save = save
     wiki_index.source = source
+    wiki_index.tags_to_mentions = tags_to_mentions
 
     return wiki_index

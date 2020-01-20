@@ -27,9 +27,13 @@ As well as some optional ones:
 
 The view function node representing the wiki index has a few extra attributes defined on it. It can be accessed as the return value of the `flask_wiki.child` or `flask_wiki.index` call, or as `g.wiki`.
 
+* `wiki.MarkdownField` is a subclass of `flask_pagedown.fields.PageDownField` that handles `mentions_to_tags` and `tags_to_mentions` automatically.
+* `wiki.WikiEditForm()` returns an instance of a subclass of `flask_wtf.FlaskForm` with the fields `source` (a `MarkdownField`) and `submit_wiki_edit_form` (a `wtforms.SubmitField`).
 * `wiki.exists(namespace, title)` returns whether that article exists.
+* `wiki.mentions_to_tags` is the function passed to the setup function, or its default fallback.
 * `wiki.namespace_exists(namespace)` returns whether that namespace exists.
 * `wiki.namespaces()` returns an iterator over pairs of namespaces and all articles in that namespace.
 * `wiki.redirect_namespaces` is a dictionary mapping namespaces to functions that take an article name and return the URL to which the namespaced article node should redirect. By default, all articles in the `wiki` namespace are redirected to their respective unnamespaced article node.
 * `wiki.save(namespace, title, text)` save that text as that article's new Markdown source.
 * `wiki.source(namespace, title)` returns that article's Markdown source. Raises FileNotFoundError if the article doesn't exist.
+* `wiki.tags_to_mentions` is the function passed to the setup function, or its default fallback.
