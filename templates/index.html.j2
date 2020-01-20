@@ -8,7 +8,7 @@
         <h2>{{namespace}}</h2>
         <ul>
             {% for article in articles %}
-                <li>{{article}}</li>
+                <li><a href="{{(g.view_node / title / namespace).url}}">{{article}}</a></li>
             {% else %}
                 <li>(This namespace is empty.)</li>
             {% endfor %}
