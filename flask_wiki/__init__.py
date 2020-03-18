@@ -188,7 +188,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
 
         def namespaces():
             for namespace in Namespace.query.order_by(Namespace.name).all():
-                yield namespace.name, [revision.title for Revision.query.filter_by(namespace=namespace.name).distinct(Revision.title).order_by(Revision.title).all()]
+                yield namespace.name, [revision.title for revision in Revision.query.filter_by(namespace=namespace.name).distinct(Revision.title).order_by(Revision.title).all()]
 
         def save(namespace, title, text, author=None, summary=None):
             rev = Revision(
