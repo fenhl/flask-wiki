@@ -203,7 +203,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             db.session.commit()
 
         def source(namespace, title):
-            return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp.desc()).first()
+            return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp.desc()).first().text
 
     wiki_index.MarkdownField = MarkdownField
     wiki_index.WikiEditForm = WikiEditForm
