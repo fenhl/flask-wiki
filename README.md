@@ -12,12 +12,17 @@ There are two ways to integrate flask-wiki into your website:
 Both of these functions have some required keyword-only arguments:
 
 * `md` should be an instance of `flaskext.markdown.Markdown`. An extension that can parse Discord mentions will be registered on it.
-* `user_class` should be a subclass of `flask_login.UserMixin` with the class method `by_tag` which takes a Discord username and discriminator and returns an instance, and the instance attributes (or properties) `name` (for the Discord nickname) and `profile_url` (for the page to which a Discord mention should link).
+* `user_class` should be a subclass of `flask_login.UserMixin` with the class method `by_tag` which takes a Discord username and discriminator and returns an instance, and the instance attributes (or properties) `name` (for the Discord nickname), `profile_url` (for the page to which a Discord mention should link), and `snowflake` (for the Discord user ID).
 * `wiki_name` will be used in `<title>` tags as the name of the wiki.
-* `wiki_root` should be an instance of `pathlib.Path` representing the directory where wiki articles will be saved. Each namespace will be in its own subdirectory.
 
-As well as some optional ones:
+Exactly one of the following keyword-only arguments must be provided:
 
+* `db`, an instance of `flask_sqlalchemy.SQLAlchemy` whose `wiki` table will be used to store articles, and whose `wiki_namespaces` table will be used to track which namespaces exist.
+* `wiki_root`, an instance of `pathlib.Path` representing the directory where wiki articles will be saved. Each namespace will be in its own subdirectory. Edit history will not be saved.
+
+There are also the following optional keyword arguments:
+
+* `current_user` is a function that returns the user currently viewing this page, as an instance of `user_class`. Defaults to returning `flask.g.user`. Only used by the `db` backend.
 * `edit_decorators` is a list of decorators that will be added to the edit view (which is also used to create a new article). It defaults to an empty list.
 * `mentions_to_tags` is a function that takes a Markdown string and returns the same string except with user mentions replaced with a more user-friendly syntax. By default this converts Discord mentions like `<@86841168427495424>` to Discord tags like `@Fenhl#4813`.
 * `tags_to_mentions` is the inverse of `mentions_to_tags`.
@@ -34,6 +39,6 @@ The view function node representing the wiki index has a few extra attributes de
 * `wiki.namespace_exists(namespace)` returns whether that namespace exists.
 * `wiki.namespaces()` returns an iterator over pairs of namespaces and all articles in that namespace.
 * `wiki.redirect_namespaces` is a dictionary mapping namespaces to functions that take an article name and return the URL to which the namespaced article node should redirect. By default, all articles in the `wiki` namespace are redirected to their respective unnamespaced article node.
-* `wiki.save(namespace, title, text)` save that text as that article's new Markdown source.
+* `wiki.save(namespace, title, text, author=None, summary=None)` saves that text as that article's new Markdown source. `author`, if given, should be an instance of `user_class`. `author` and `summary` are ignored by the `wiki_root` backend.
 * `wiki.source(namespace, title)` returns that article's Markdown source. Raises FileNotFoundError if the article doesn't exist.
 * `wiki.tags_to_mentions` is the function passed to the setup function, or its default fallback.
