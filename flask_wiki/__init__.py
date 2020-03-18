@@ -175,7 +175,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             title = sqlalchemy.Column(sqlalchemy.String(), nullable=False)
             text = sqlalchemy.Column(sqlalchemy.String(), nullable=False)
             author = sqlalchemy.Column(sqlalchemy.BigInteger)
-            timestamp = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True)), nullable=False)
+            timestamp = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True), nullable=False)
             summary = sqlalchemy.Column(sqlalchemy.String())
 
         db.create_all()
