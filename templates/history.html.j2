@@ -1,0 +1,25 @@
+{% extends 'base.html.j2' %}
+
+{% block title %}history — {% if namespace == 'wiki' %}{{title}}{% else %}{{namespace}}/{{title}}{% endif %} — {{wiki_name}}{% endblock %}
+
+{% block page_content %}
+    <h1>History of wiki article “{% if namespace == 'wiki' %}{{title}}{% else %}{{namespace}}/{{title}}{% endif %}”</h1>
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Author</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for revision in g.wiki.history(namespace, title) | reverse %}
+                <tr>
+                    <td>{{revision.timestamp | dt_format}}</td> {#TODO link to revision page#}
+                    <td>{% if revision.author is none %}unknown{% else %}{{revision.author}}{% endif %}</td>
+                    <td>{% if revision.summary is not none %}{{revision.summary}}{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

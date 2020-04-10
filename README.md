@@ -12,7 +12,11 @@ There are two ways to integrate flask-wiki into your website:
 Both of these functions have some required keyword-only arguments:
 
 * `md` should be an instance of `flaskext.markdown.Markdown`. An extension that can parse Discord mentions will be registered on it.
-* `user_class` should be a subclass of `flask_login.UserMixin` with the class method `by_tag` which takes a Discord username and discriminator and returns an instance, and the instance attributes (or properties) `name` (for the Discord nickname), `profile_url` (for the page to which a Discord mention should link), and `snowflake` (for the Discord user ID).
+* `user_class` should be a subclass of `flask_login.UserMixin` with the class method `by_tag` which takes a Discord username and discriminator and returns an instance, and the following instance attributes (or properties):
+    * `name` for the Discord nickname
+    * `profile_url` for the page to which a Discord mention should link
+    * `snowflake` for the Discord user ID
+    * optionally, a `__html__` or `__str__` representation
 * `wiki_name` will be used in `<title>` tags as the name of the wiki.
 
 Exactly one of the following keyword-only arguments must be provided:
@@ -37,6 +41,14 @@ The view function node representing the wiki index has a few extra attributes de
 * `wiki.MarkdownField` is a subclass of `flask_pagedown.fields.PageDownField` that handles `mentions_to_tags` and `tags_to_mentions` automatically.
 * `wiki.WikiEditForm()` returns an instance of a subclass of `flask_wtf.FlaskForm` with the fields `source` (a `MarkdownField`) and `submit_wiki_edit_form` (a `wtforms.SubmitField`).
 * `wiki.exists(namespace, title)` returns whether that article exists.
+* `wiki.history(namespace, title)` returns an iterable of revisions of that article, in chronological order. The method only exists if the `db` backend is used. A revision has the following attributes:
+    * `author`, either `None` or an instance of `user_class` representing the user who submitted this revision
+    * `id`, an `int` uniquely identifying this revision
+    * `namespace` of the article
+    * `summary`, either `None` or a `str`
+    * `text`
+    * `timestamp`, a timezone-aware `datetime`
+    * `title` of the article
 * `wiki.mentions_to_tags` is the function passed to the setup function, or its default fallback.
 * `wiki.namespace_exists(namespace)` returns whether that namespace exists.
 * `wiki.namespaces()` returns an iterator over pairs of namespaces and all articles in that namespace.

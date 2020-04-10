@@ -1,3 +1,4 @@
+import datetime
 import re
 
 import flask # PyPI: Flask
@@ -8,6 +9,7 @@ import jinja2 # PyPI: Jinja2
 import markdown # PyPI: Markdown
 import markdown.inlinepatterns # PyPI: Markdown
 import markdown.util # PyPI: Markdown
+import pytz # PyPI: pytz
 import wtforms # PyPI: WTForms
 
 import flask_view_tree # https://github.com/fenhl/flask-view-tree
@@ -50,6 +52,24 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             md.inlinePatterns.add('discord-mention', DiscordMentionPattern(DISCORD_MENTION_REGEX, md), '<reference')
 
     md.register_extension(DiscordMentionExtension)
+
+    def parse_iso_datetime(datetime_str, *, tz=pytz.utc):
+        if isinstance(datetime_str, datetime.datetime):
+            return datetime_str
+        result = dateutil.parser.isoparse(datetime_str)
+        if result.tzinfo is not None and result.tzinfo.utcoffset(result) is not None: # result is timezone-aware
+            return result.astimezone(tz)
+        else:
+            return tz.localize(result, is_dst=None)
+
+    @app.template_filter()
+    def dt_format(value, format='%Y-%m-%d %H:%M:%S'):
+        if isinstance(value, str):
+            value = parse_iso_datetime(value)
+        if hasattr(value, 'astimezone'):
+            return render_template('wiki.datetime-format', local_timestamp=value, utc_timestamp=value.astimezone(pytz.utc), format=format)
+        else:
+            return value.strftime(format)
 
     @decorator
     def wiki_index():
@@ -116,7 +136,10 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
 
     @wiki_article_namespaced.child('history')
     def wiki_article_history(title, namespace):
-        return render_template('wiki.history', title=title, namespace=namespace)
+        if wiki_index.exists(namespace, title):
+            return render_template('wiki.history', title=title, namespace=namespace, wiki_name=wiki_name)
+        else:
+            return render_template('wiki.404', title=title, namespace=namespace, wiki_name=wiki_name), 404
 
     @app.before_request
     def current_time():
@@ -161,6 +184,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
                 return article_f.read()
     else:
         import sqlalchemy # PyPI: SQLAlchemy
+        import sqlalchemy.ext.hybrid # PyPI: SQLAlchemy
 
         class Namespace(db.Model):
             __tablename__ = 'wiki_namespaces'
@@ -174,14 +198,29 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             namespace = sqlalchemy.Column(sqlalchemy.String(), nullable=False)
             title = sqlalchemy.Column(sqlalchemy.String(), nullable=False)
             text = sqlalchemy.Column(sqlalchemy.String(), nullable=False)
-            author = sqlalchemy.Column(sqlalchemy.BigInteger)
+            author_snowflake = sqlalchemy.Column('author', sqlalchemy.BigInteger)
             timestamp = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True), nullable=False)
             summary = sqlalchemy.Column(sqlalchemy.String())
+
+            @sqlalchemy.ext.hybrid.hybrid_property
+            def author(self):
+                if self.author_snowflake is not None:
+                    user_class_constructor(self.author_snowflake)
+
+            @author.setter
+            def author(self, author):
+                if author is None:
+                    self.author_snowflake = None
+                else:
+                    self.author_snowflake = author.snowflake
 
         db.create_all()
 
         def exists(namespace, title):
             return Revision.query.filter_by(namespace=namespace, title=title).count() > 0
+
+        def history(namespace, title):
+            return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp).all()
 
         def namespace_exists(namespace):
             return Revision.query.get(namespace) is not None
@@ -195,7 +234,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
                 namespace=namespace,
                 title=title,
                 text=text,
-                author=None if author is None else author.snowflake,
+                author=author,
                 timestamp=datetime.datetime.now(datetime.timezone.utc),
                 summary=summary
             )
