@@ -41,7 +41,8 @@ def migrate(wiki_root, engine):
                 namespace=namespace_dir.name,
                 title=article_path.stem,
                 text=text,
-                timestamp=datetime.datetime.fromtimestamp(article_path.stat().st_mtime, datetime.timezone.utc)
+                timestamp=datetime.datetime.fromtimestamp(article_path.stat().st_mtime, datetime.timezone.utc),
+                summary='automatically migrated'
             ))
     session.commit()
 
