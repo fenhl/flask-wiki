@@ -223,7 +223,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp).all()
 
         def namespace_exists(namespace):
-            return Revision.query.get(namespace) is not None
+            return Namespace.query.get(namespace) is not None
 
         def namespaces():
             for namespace in Namespace.query.order_by(Namespace.name).all():
