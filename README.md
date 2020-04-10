@@ -20,6 +20,8 @@ Exactly one of the following keyword-only arguments must be provided:
 * `db`, an instance of `flask_sqlalchemy.SQLAlchemy` whose `wiki` table will be used to store articles, and whose `wiki_namespaces` table will be used to track which namespaces exist.
 * `wiki_root`, an instance of `pathlib.Path` representing the directory where wiki articles will be saved. Each namespace will be in its own subdirectory. Edit history will not be saved.
 
+The script `flask_wiki/migrate.py` in this repository can be used to migrate a wiki database from the `wiki_root` backend to the `db` backend.
+
 There are also the following optional keyword arguments:
 
 * `current_user` is a function that returns the user currently viewing this page, as an instance of `user_class`. Defaults to returning `flask.g.user`. Only used by the `db` backend.
