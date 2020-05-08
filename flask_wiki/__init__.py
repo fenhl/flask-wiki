@@ -205,7 +205,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             @sqlalchemy.ext.hybrid.hybrid_property
             def author(self):
                 if self.author_snowflake is not None:
-                    user_class_constructor(self.author_snowflake)
+                    return user_class_constructor(self.author_snowflake)
 
             @author.setter
             def author(self, author):
