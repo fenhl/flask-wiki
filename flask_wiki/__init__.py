@@ -202,7 +202,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             timestamp = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True), nullable=False)
             summary = sqlalchemy.Column(sqlalchemy.String())
 
-            @sqlalchemy.ext.hybrid.hybrid_property
+            @property
             def author(self):
                 if self.author_snowflake is not None:
                     return user_class_constructor(self.author_snowflake)
