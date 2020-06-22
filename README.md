@@ -34,6 +34,8 @@ There are also the following optional keyword arguments:
 * `tags_to_mentions` is the inverse of `mentions_to_tags`.
 * `user_class_constructor` is a function that constructs an instance of `user_class` from the snowflake in a user mention. It defaults to `user_class`.
 
+Any remaining keyword arguments will be passed through to `flask_view_tree.index` or `view.child`.
+
 ## The wiki object
 
 The view function node representing the wiki index has a few extra attributes defined on it. It can be accessed as the return value of the `flask_wiki.child` or `flask_wiki.index` call, or as `g.wiki`.
