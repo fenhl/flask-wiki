@@ -8,6 +8,7 @@ import flaskext.markdown # PyPI: Flask-Markdown
 import jinja2 # PyPI: Jinja2
 import markdown # PyPI: Markdown
 import markdown.inlinepatterns # PyPI: Markdown
+import markdown.treeprocessors # PyPI: Markdown
 import markdown.util # PyPI: Markdown
 import pytz # PyPI: pytz
 import wtforms # PyPI: WTForms
@@ -46,11 +47,25 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             el.set('href', user.profile_url)
             return el, m.start(0), m.end(0)
 
+    @md.extend()
     class DiscordMentionExtension(markdown.Extension):
         def extendMarkdown(self, md, md_globals):
             md.inlinePatterns.add('discord-mention', DiscordMentionPattern(DISCORD_MENTION_REGEX, md), '<reference')
 
-    md.register_extension(DiscordMentionExtension)
+    class TableClassTreeProcessor(markdown.treeprocessors.Treeprocessor):
+        def run(self, root):
+            for child in root:
+                if child.tag == 'table':
+                    if child.get('class', '') == '':
+                        child.set('class', 'table table-responsive')
+                    else:
+                        child.set('class', child.get('class') + ' table table-responsive')
+                self.run(child) # recurse
+
+    @md.extend()
+    class TableClassExtension(markdown.Extension):
+        def extendMarkdown(self, md, md_globals):
+            md.treeprocessors.register(TableClassTreeProcessor(md), 'tableclass', 5)
 
     def parse_iso_datetime(datetime_str, *, tz=pytz.utc):
         if isinstance(datetime_str, datetime.datetime):

@@ -11,7 +11,9 @@ There are two ways to integrate flask-wiki into your website:
 
 Both of these functions have some required keyword-only arguments:
 
-* `md` should be an instance of `flaskext.markdown.Markdown`. An extension that can parse Discord mentions will be registered on it.
+* `md` should be an instance of `flaskext.markdown.Markdown`. Two extensions will be registered on it:
+    * An extension that can parse Discord mentions
+    * An extension that adds the `table` and `table-responsive` classes to all `<table>` elements
 * `user_class` should be a subclass of `flask_login.UserMixin` with the class method `by_tag` which takes a Discord username and discriminator and returns an instance, and the following instance attributes (or properties):
     * `name` for the Discord nickname
     * `profile_url` for the page to which a Discord mention should link
