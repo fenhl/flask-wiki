@@ -48,7 +48,6 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
 
     class DiscordMentionExtension(markdown.Extension):
         def extendMarkdown(self, md, md_globals):
-            config = self.getConfigs()
             md.inlinePatterns.add('discord-mention', DiscordMentionPattern(DISCORD_MENTION_REGEX, md), '<reference')
 
     md.register_extension(DiscordMentionExtension)
