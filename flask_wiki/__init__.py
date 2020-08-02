@@ -18,11 +18,11 @@ import flask_view_tree # https://github.com/fenhl/flask-view-tree
 DISCORD_MENTION_REGEX = '<@!?([0-9]+)>'
 DISCORD_TAG_REGEX = '@([^@#:\n]{2,32})#([0-9]{4})' # see https://discord.com/developers/docs/resources/user
 
-def child(view, name='wiki', display_string=None, *, current_user=lambda: flask.g.user, db=None, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, user_class_constructor=None, wiki_name, wiki_root=None, **options):
-    return setup(view.view_func_node.app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, view.child(name, display_string, **options))
+def child(view, name='wiki', display_string=None, *, current_user=lambda: flask.g.user, db=None, edit_decorators=[], md, mentions_to_tags=None, save_hook=lambda namespace, title, text, author, summary: None, tags_to_mentions=None, user_class, user_class_constructor=None, wiki_name, wiki_root=None, **options):
+    return setup(view.view_func_node.app, current_user, db, edit_decorators, md, mentions_to_tags, save_hook, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, view.child(name, display_string, **options))
 
-def index(app, *, current_user=lambda: flask.g.user, db=None, edit_decorators=[], md, mentions_to_tags=None, tags_to_mentions=None, user_class, user_class_constructor=None, wiki_root=None, **options):
-    return setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, flask_view_tree.index(app, **options))
+def index(app, *, current_user=lambda: flask.g.user, db=None, edit_decorators=[], md, mentions_to_tags=None, save_hook=lambda namespace, title, text, author, summary: None, tags_to_mentions=None, user_class, user_class_constructor=None, wiki_root=None, **options):
+    return setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hook, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, flask_view_tree.index(app, **options))
 
 def render_template(template_name, **kwargs):
     if template_name is None:
@@ -31,7 +31,7 @@ def render_template(template_name, **kwargs):
         template_path = f'{template_name.replace(".", "/")}.html.j2'
     return jinja2.Markup(flask.render_template(template_path, **kwargs))
 
-def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, decorator):
+def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hook, tags_to_mentions, user_class, user_class_constructor, wiki_name, wiki_root, decorator):
     if db is None and wiki_root is None:
         raise ValueError('Must specify either `db` or `wiki_root`')
     elif db is not None and wiki_root is not None:
@@ -141,10 +141,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             return render_template('wiki.namespace-404', namespace=namespace, wiki_name=wiki_name), 404
         wiki_edit_form = WikiEditForm(source)
         if wiki_edit_form.submit_wiki_edit_form.data and wiki_edit_form.validate():
-            if db is None:
-                wiki_index.save(namespace, title, wiki_edit_form.source.data)
-            else:
-                wiki_index.save(namespace, title, wiki_edit_form.source.data, author=current_user(), summary=wiki_edit_form.summary.data)
+            wiki_index.save(namespace, title, wiki_edit_form.source.data, author=current_user(), summary=wiki_edit_form.summary.data)
             return flask.redirect(flask.g.view_node.parent.url)
         return render_template('wiki.edit', exists=exists, title=title, namespace=namespace, wiki_name=wiki_name, wiki_edit_form=wiki_edit_form)
 
@@ -191,6 +188,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             article_path = wiki_root / namespace / f'{title}.md'
             with article_path.open('w') as article_f:
                 article_f.write(text)
+            save_hook(namespace, title, text, author, summary)
 
         def source(namespace, title):
             article_path = wiki_root / namespace / f'{title}.md'
@@ -254,6 +252,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, tags_to_
             )
             db.session.add(rev)
             db.session.commit()
+            save_hook(namespace, title, text, author, summary)
 
         def source(namespace, title):
             return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp.desc()).first().text
