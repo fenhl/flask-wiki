@@ -1,4 +1,5 @@
 import datetime
+import inspect
 import re
 
 import flask # PyPI: Flask
@@ -141,7 +142,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
             return render_template('wiki.namespace-404', namespace=namespace, wiki_name=wiki_name), 404
         wiki_edit_form = WikiEditForm(source)
         if wiki_edit_form.submit_wiki_edit_form.data and wiki_edit_form.validate():
-            wiki_index.save(namespace, title, wiki_edit_form.source.data, author=current_user(), summary=wiki_edit_form.summary.data)
+            wiki_index.save(namespace, title, wiki_edit_form.source.data, author=current_user(), summary=wiki_edit_form.summary.data, created=not exists)
             return flask.redirect(flask.g.view_node.parent.url)
         return render_template('wiki.edit', exists=exists, title=title, namespace=namespace, wiki_name=wiki_name, wiki_edit_form=wiki_edit_form)
 
@@ -184,11 +185,14 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
             for namespace_dir in sorted(wiki_root.iterdir()):
                 yield namespace_dir.name, sorted(article.stem for article in namespace_dir.iterdir())
 
-        def save(namespace, title, text, author=None, summary=None):
+        def save(namespace, title, text, author=None, summary=None, created=False):
             article_path = wiki_root / namespace / f'{title}.md'
             with article_path.open('w') as article_f:
                 article_f.write(text)
-            save_hook(namespace, title, text, author, summary)
+            if len(inspect.signature(save_hook).parameters) >= 6:
+                save_hook(namespace, title, text, author, summary, created)
+            else:
+                save_hook(namespace, title, text, author, summary)
 
         def source(namespace, title):
             article_path = wiki_root / namespace / f'{title}.md'
@@ -241,7 +245,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
             for namespace in Namespace.query.order_by(Namespace.name).all():
                 yield namespace.name, [revision.title for revision in Revision.query.filter_by(namespace=namespace.name).distinct(Revision.title).order_by(Revision.title).all()]
 
-        def save(namespace, title, text, author=None, summary=None):
+        def save(namespace, title, text, author=None, summary=None, created=False):
             rev = Revision(
                 namespace=namespace,
                 title=title,
@@ -252,7 +256,10 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
             )
             db.session.add(rev)
             db.session.commit()
-            save_hook(namespace, title, text, author, summary)
+            if len(inspect.signature(save_hook).parameters) >= 6:
+                save_hook(namespace, title, text, author, summary, created)
+            else:
+                save_hook(namespace, title, text, author, summary)
 
         def source(namespace, title):
             return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp.desc()).first().text

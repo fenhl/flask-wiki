@@ -33,7 +33,7 @@ There are also the following optional keyword arguments:
 * `current_user` is a function that returns the user currently viewing this page, as an instance of `user_class`. Defaults to returning `flask.g.user`.
 * `edit_decorators` is a list of decorators that will be added to the edit view (which is also used to create a new article). It defaults to an empty list.
 * `mentions_to_tags` is a function that takes a Markdown string and returns the same string except with user mentions replaced with a more user-friendly syntax. By default this converts Discord mentions like `<@86841168427495424>` to Discord tags like `@Fenhl#4813`.
-* `save_hook` is a function that takes as positional arguments the namespace, title, text, author, and summary of a revision. It will be called after each revision is saved, including for new articles. Defaults to no-op.
+* `save_hook` is a function that will be called after each revision is saved. It takes as positional arguments the namespace, title, text, author, and summary of a revision. If the function takes a 6th parameter, it will be set to a Boolean indicating whether the revision newly created the article. Defaults to no-op.
 * `tags_to_mentions` is the inverse of `mentions_to_tags`.
 * `user_class_constructor` is a function that constructs an instance of `user_class` from the snowflake in a user mention. It defaults to `user_class`.
 
@@ -58,6 +58,6 @@ The view function node representing the wiki index has a few extra attributes de
 * `wiki.namespace_exists(namespace)` returns whether that namespace exists.
 * `wiki.namespaces()` returns an iterator over pairs of namespaces and all articles in that namespace.
 * `wiki.redirect_namespaces` is a dictionary mapping namespaces to functions that take an article name and return the URL to which the namespaced article node should redirect. By default, all articles in the `wiki` namespace are redirected to their respective unnamespaced article node.
-* `wiki.save(namespace, title, text, author=None, summary=None)` saves that text as that article's new Markdown source. `author`, if given, should be an instance of `user_class`. `author` and `summary` are ignored by the `wiki_root` backend.
+* `wiki.save(namespace, title, text, author=None, summary=None, created=False)` saves that text as that article's new Markdown source. `author`, if given, should be an instance of `user_class`. `author` and `summary` are ignored by the `wiki_root` backend.
 * `wiki.source(namespace, title)` returns that article's Markdown source. Raises FileNotFoundError if the article doesn't exist.
 * `wiki.tags_to_mentions` is the function passed to the setup function, or its default fallback.
