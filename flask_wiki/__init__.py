@@ -164,9 +164,9 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
                 return text
             user = user_class_constructor(match.group(1))
             if user is None:
-                text = f'{text[:match.end()]}{mentions_to_tags(text[match.end():])}'
+                return f'{text[:match.end()]}{mentions_to_tags(text[match.end():])}'
             else:
-                text = f'{text[:match.start()]}@{user}{mentions_to_tags(text[match.end():])}'
+                return f'{text[:match.start()]}@{user}{mentions_to_tags(text[match.end():])}'
 
     if tags_to_mentions is None:
         def tags_to_mentions(text):
@@ -175,9 +175,9 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
                 return text
             user = user_class.by_tag(match.group(1), int(match.group(2)))
             if user is None:
-                text = f'{text[:match.end()]}{tags_to_mentions(text[match.end():])}'
+                return f'{text[:match.end()]}{tags_to_mentions(text[match.end():])}'
             else:
-                text = f'{text[:match.start()]}<@{user.snowflake}>{tags_to_mentions(text[match.end():])}'
+                return f'{text[:match.start()]}<@{user.snowflake}>{tags_to_mentions(text[match.end():])}'
 
     if db is None:
         def exists(namespace, title):
