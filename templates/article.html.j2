@@ -1,12 +1,18 @@
 {% extends 'base.html.j2' %}
 
-{% block title %}{% if namespace == 'wiki' %}{{title}}{% else %}{{namespace}}/{{title}}{% endif %} — {{wiki_name}}{% endblock %}
+{% block title %}{% if revision is not none %}revision of {% endif %}{% if namespace == 'wiki' %}{{title}}{% else %}{{namespace}}/{{title}}{% endif %} — {{wiki_name}}{% endblock %}
 
 {% block page_content %}
     <h1>
         {% if namespace == 'wiki' %}{{title}}{% else %}{{namespace}}/{{title}}{% endif %} — {{wiki_name}}
-        <a href="{{url_for('wiki_article_edit', title=title, namespace=namespace)}}" class="btn btn-primary">Edit</a>
-        <a href="{{url_for('wiki_article_history', title=title, namespace=namespace)}}" class="btn btn-link">History</a>
+        {% if revision is none %}
+            <a href="{{url_for('wiki_article_edit', title=title, namespace=namespace)}}" class="btn btn-primary">Edit</a>
+        {% else %}
+            <a href="{{url_for('wiki_article_namespaced', title=title, namespace=namespace)}}" class="btn btn-primary">View latest revision</a>
+        {% endif %}
+        {% if g.wiki.has_history %}
+            <a href="{{url_for('wiki_article_history', title=title, namespace=namespace)}}" class="btn btn-link">History</a>
+        {% endif %}
     </h1>
-    {{ g.wiki.source(namespace, title) | markdown }}
+    {{ g.wiki.source(namespace, title, revision) | markdown }}
 {% endblock %}

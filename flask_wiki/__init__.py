@@ -95,18 +95,18 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
     @wiki_index.children()
     def wiki_article(title):
         if wiki_index.exists('wiki', title):
-            return render_template('wiki.article', title=title, namespace='wiki', wiki_name=wiki_name)
+            return render_template('wiki.article', namespace='wiki', title=title, revision=None, wiki_name=wiki_name)
         else:
-            return render_template('wiki.404', title=title, namespace='wiki', wiki_name=wiki_name), 404
+            return render_template('wiki.404', namespace='wiki', title=title, revision=None, wiki_name=wiki_name), 404
 
     @wiki_article.children()
     def wiki_article_namespaced(title, namespace):
         if namespace in wiki_index.redirect_namespaces:
             return flask.redirect(wiki_index.redirect_namespaces[namespace](title))
         elif wiki_index.exists(namespace, title):
-            return render_template('wiki.article', title=title, namespace=namespace, wiki_name=wiki_name)
+            return render_template('wiki.article', namespace=namespace, title=title, revision=None, wiki_name=wiki_name)
         else:
-            return render_template('wiki.404', title=title, namespace=namespace, wiki_name=wiki_name), 404
+            return render_template('wiki.404', namespace=namespace, title=title, revision=None, wiki_name=wiki_name), 404
 
     class MarkdownField(flask_pagedown.fields.PageDownField):
         def _value(self):
@@ -153,9 +153,19 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
         else:
             return render_template('wiki.404', title=title, namespace=namespace, wiki_name=wiki_name), 404
 
+    @wiki_article_history.children(int)
+    def wiki_article_permalink(title, namespace, revision):
+        if wiki_index.exists(namespace, title, revision):
+            return render_template('wiki.article', namespace=namespace, title=title, revision=revision, wiki_name=wiki_name)
+        else:
+            return render_template('wiki.404', namespace=namespace, title=title, revision=revision, wiki_name=wiki_name), 404
+
     @app.before_request
     def current_time():
         flask.g.wiki = wiki_index
+
+    def has_history():
+        return hasattr(wiki_index, 'history')
 
     if mentions_to_tags is None:
         def mentions_to_tags(text):
@@ -200,7 +210,9 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
             else:
                 save_hook(namespace, title, text, author, summary)
 
-        def source(namespace, title):
+        def source(namespace, title, revision=None):
+            if revision is not None:
+                raise NotImplementedError('This backend does not support revision history')
             article_path = wiki_root / namespace / f'{title}.md'
             with article_path.open() as article_f:
                 return article_f.read()
@@ -238,8 +250,12 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
 
         db.create_all()
 
-        def exists(namespace, title):
-            return Revision.query.filter_by(namespace=namespace, title=title).count() > 0
+        def exists(namespace, title, revision=None):
+            if revision is None:
+                return Revision.query.filter_by(namespace=namespace, title=title).count() > 0
+            else:
+                rev = Revision.query.get(revision)
+                return rev is not None and rev.namespace == namespace and rev.title == title
 
         def history(namespace, title):
             return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp).all()
@@ -267,14 +283,18 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
             else:
                 save_hook(namespace, title, text, author, summary)
 
-        def source(namespace, title):
-            return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp.desc()).first().text
+        def source(namespace, title, revision=None):
+            if revision is None:
+                return Revision.query.filter_by(namespace=namespace, title=title).order_by(Revision.timestamp.desc()).first().text
+            else:
+                return Revision.query.get(revision).text
 
         wiki_index.history = history
 
     wiki_index.MarkdownField = MarkdownField
     wiki_index.WikiEditForm = WikiEditForm
     wiki_index.exists = exists
+    wiki_index.has_history = has_history
     wiki_index.mentions_to_tags = mentions_to_tags
     wiki_index.namespace_exists = namespace_exists
     wiki_index.namespaces = namespaces

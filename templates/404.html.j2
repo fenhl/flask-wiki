@@ -3,8 +3,8 @@
 {% block title %}article not found — {{wiki_name}}{% endblock %}
 
 {% block page_content %}
-    <h1>Article not found</h1>
-    <p>There is no article called “{{title}}” in the wiki namespace “{{namespace}}”.</p>
+    <h1>{% if revision is none %}Article{% else %}Revision{% endif %} not found</h1>
+    <p>There is no article called “{{title}}” in the wiki namespace “{{namespace}}”{% if revision is not none %} or no revision {{revision}}.{% endif %}.</p>
     <p>
         <a href="{{url_for('wiki_article_edit', title=title, namespace=namespace)}}">Create this article</a>
         • <a href="{{url_for('wiki_index')}}">{{wiki_name}} main page</a>
