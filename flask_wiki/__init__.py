@@ -50,8 +50,8 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
 
     @md.extend()
     class DiscordMentionExtension(markdown.Extension):
-        def extendMarkdown(self, md, md_globals):
-            md.inlinePatterns.add('discord-mention', DiscordMentionPattern(DISCORD_MENTION_REGEX, md), '<reference')
+        def extendMarkdown(self, md, md_globals=None):
+            md.inlinePatterns.register(DiscordMentionPattern(DISCORD_MENTION_REGEX, md), 'discord-mention', 168)
 
     class TableClassTreeProcessor(markdown.treeprocessors.Treeprocessor):
         def run(self, root):
@@ -65,7 +65,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
 
     @md.extend()
     class TableClassExtension(markdown.Extension):
-        def extendMarkdown(self, md, md_globals):
+        def extendMarkdown(self, md, md_globals=None):
             md.treeprocessors.register(TableClassTreeProcessor(md), 'tableclass', 5)
 
     def parse_iso_datetime(datetime_str, *, tz=pytz.utc):
