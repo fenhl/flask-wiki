@@ -1,6 +1,7 @@
 import datetime
 import inspect
 import re
+import xml.etree.ElementTree
 
 import flask # PyPI: Flask
 import flask_pagedown.fields # PyPI: Flask-PageDown
@@ -10,7 +11,6 @@ import jinja2 # PyPI: Jinja2
 import markdown # PyPI: Markdown
 import markdown.inlinepatterns # PyPI: Markdown
 import markdown.treeprocessors # PyPI: Markdown
-import markdown.util # PyPI: Markdown
 import pytz # PyPI: pytz
 import wtforms # PyPI: WTForms
 
@@ -43,7 +43,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
     class DiscordMentionPattern(markdown.inlinepatterns.LinkInlineProcessor):
         def handleMatch(self, m, data):
             user = user_class_constructor(m.group(1))
-            el = markdown.util.etree.Element('a')
+            el = import xml.etree.ElementTree.Element('a')
             el.text = f'@{user.name}'
             el.set('href', user.profile_url)
             return el, m.start(0), m.end(0)
