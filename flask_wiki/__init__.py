@@ -43,7 +43,7 @@ def setup(app, current_user, db, edit_decorators, md, mentions_to_tags, save_hoo
     class DiscordMentionPattern(markdown.inlinepatterns.LinkInlineProcessor):
         def handleMatch(self, m, data):
             user = user_class_constructor(m.group(1))
-            el = import xml.etree.ElementTree.Element('a')
+            el = xml.etree.ElementTree.Element('a')
             el.text = f'@{user.name}'
             el.set('href', user.profile_url)
             return el, m.start(0), m.end(0)
